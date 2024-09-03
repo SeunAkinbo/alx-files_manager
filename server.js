@@ -1,18 +1,23 @@
-// server.js
+import express from "express";
+// Import the bodyParser module for image uploads size tampering
+// eslint-disable-next-line import/no-extraneous-dependencies
+import bodyParser from "body-parser";
+import router from "./routes/index";
 
-const express = require("express");
-const routes = require("./routes/index");
-
-// Create the Express app
 const app = express();
+const port = parseInt(process.env.PORT, 10) || 5000;
 
-// Load routes from the routes/index.js file
-app.use("/", routes);
+// increase the body size limit to 10MB - or more if you like
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
-// Set the port to the environment variable PORT or default to 5000
-const PORT = process.env.PORT || 5000;
+// load routes from the routes folder
+app.use(express.json()); // parse incoming requests with JSON payloads (UserController.js)
+app.use("/", router);
 
-// Start the server and listen on the specified port
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// start the server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
+
+export default app;
