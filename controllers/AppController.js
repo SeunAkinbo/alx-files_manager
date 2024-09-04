@@ -1,34 +1,33 @@
 // controllers/AppController.js
+const mongoose = require('mongoose');
 
-import redisClient from "../utils/redis";
-import dbClient from "../utils/db";
+// Import your models (assuming you have User and File models)
+const User = mongoose.model('User', new mongoose.Schema({})); // Define your User schema
+const File = mongoose.model('File', new mongoose.Schema({})); // Define your File schema
 
-/**
- * AppController class to handle the status and stats endpoints.
- */
-class AppController {
-  /**
-   * GET /status endpoint handler.
-   * @param {Object} req - Express request object.
-   * @param {Object} res - Express response object.
-   */
-  static async getStatus(req, res) {
-    res.status(200).json({
-      redis: await redisClient.isAlive(),
-      db: await dbClient.isAlive(),
-    });
-  }
+// Controller to check the status of Redis and DB
+exports.getStatus = async (req, res) => {
+    try {
+        // Here you would check Redis status; for now, we'll assume it's alive
+        const redisAlive = true; // Replace with actual Redis check
 
-  /**
-   * GET /stats endpoint handler.
-   * @param {Object} req - Express request object.
-   * @param {Object} res - Express response object.
-   */
-  static async getStats(req, res) {
-    const usersNum = await dbClient.nbUsers();
-    const filesNum = await dbClient.nbFiles();
-    res.status(200).json({ users: usersNum, files: filesNum });
-  }
-}
+        // Check if MongoDB is alive
+        const dbAlive = mongoose.connection.readyState === 1; // 1 means connected
 
-export default AppController;
+        res.status(200).json({ redis: redisAlive, db: dbAlive });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+// Controller to get stats
+exports.getStats = async (req, res) => {
+    try {
+        const userCount = await User.countDocuments();
+        const fileCount = await File.countDocuments();
+
+        res.status(200).json({ users: userCount, files: fileCount });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

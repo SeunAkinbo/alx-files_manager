@@ -1,23 +1,30 @@
-import express from "express";
-// Import the bodyParser module for image uploads size tampering
-// eslint-disable-next-line import/no-extraneous-dependencies
-import bodyParser from "body-parser";
-import router from "./routes/index";
+// server.js
+const express = require('express');
+const mongoose = require('mongoose');
+const routes = require('./routes/index');
 
 const app = express();
-const port = parseInt(process.env.PORT, 10) || 5000;
+const PORT = process.env.PORT || 5000;
 
-// increase the body size limit to 10MB - or more if you like
-app.use(bodyParser.json({ limit: "10mb" }));
-app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+// Middleware to parse JSON
+app.use(express.json());
 
-// load routes from the routes folder
-app.use(express.json()); // parse incoming requests with JSON payloads (UserController.js)
-app.use("/", router);
+// Load routes
+app.use('/api', routes);
 
-// start the server
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// Connect to MongoDB (replace with your connection string)
+mongoose.connect('mongodb://localhost:27017/mydatabase', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => {
+    console.log('Connected to MongoDB');
+})
+.catch(err => {
+    console.error('Could not connect to MongoDB:', err);
 });
 
-export default app;
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
